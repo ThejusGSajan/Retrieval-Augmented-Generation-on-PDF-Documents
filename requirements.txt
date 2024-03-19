@@ -9,4 +9,3 @@ accelerate
 sentence_transformers
 streamlit_chat
 tiktoken
-llama-cpp-python
