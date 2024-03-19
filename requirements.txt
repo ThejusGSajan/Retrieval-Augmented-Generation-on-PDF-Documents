@@ -1,0 +1,12 @@
+streamlit
+pypdf2
+langchain
+python-dotenv
+huggingface_hub
+faiss-cpu
+torch
+accelerate
+sentence_transformers
+streamlit_chat
+tiktoken
+llama-cpp-python
