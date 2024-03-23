@@ -1,8 +1,9 @@
 import streamlit as st
 import os
 import tempfile
-# from langchain.document_loaders import PyPDFLoader
 from PyPDF2 import PdfReader
+from langchain.docstore.document import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 def session_init():
     if 'history' not in st.session_state:
@@ -19,7 +20,7 @@ def main():
     uploaded_pdfs = st.sidebar.file_uploader("Upload PDFs", accept_multiple_files=True)
 
     if uploaded_pdfs:
-        text = []
+        documents = []
         for file in uploaded_pdfs:
             with tempfile.NamedTemporaryFile(delete=False) as temp_file:
                 temp_file.write(file.read())
@@ -30,10 +31,19 @@ def main():
             if extension == ".pdf":
                 reader = PdfReader(temp_path)
                 for page_number in reader.pages:
-                    text.append(page_number.extract_text())
+                    text_in_page = page_number.extract_text()
+                    document = Document(
+                        page_content=text_in_page,
+                        metadata={'page': page_number})
+                    documents.append(document)
             os.remove(temp_path)
     
-        print(text)
+        # print(text)
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=10000,
+            chunk_overlap=20)
+        chunks = splitter.split_documents(documents)
+        print(chunks)
 
 if __name__ == "__main__":
     main()
