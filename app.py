@@ -61,12 +61,10 @@ def main():
                                            model_kwargs={'device': 'cpu'})
         vector_db = FAISS.from_documents(chunks, embedding=embeddings)
 
-        llm = LlamaCpp(#streaming = True,
+        llm = LlamaCpp(streaming = True,
                        model_path="mistral-7b-instruct-v0.2.Q4_K_M.gguf",
-                       n_gpu_layers=2,
-                       n_batch=512,
-                    #    temperature=0.75,
-                    #    top_p=1,
+                       temperature=0.75,
+                       top_p=1,
                        verbose=True,
                        n_ctx=4096)
     
