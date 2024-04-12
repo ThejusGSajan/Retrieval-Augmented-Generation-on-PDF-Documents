@@ -1,3 +1,4 @@
+#saraswathy
 import streamlit as st
 import os
 import tempfile
@@ -48,7 +49,7 @@ def main():
                         metadata={'page': page_number})
                     documents.append(document)
             os.remove(temp_path)
-    
+
         # print(text)
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=10000,
@@ -66,7 +67,7 @@ def main():
                        top_p=1,
                        verbose=True,
                        n_ctx=4096)
-    
+
         memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
         chain = ConversationalRetrievalChain.from_llm(llm=llm, chain_type='stuff',
