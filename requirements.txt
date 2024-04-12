@@ -1,6 +1,6 @@
 streamlit
 pypdf2
-langchain
+langchain-community
 python-dotenv
 huggingface_hub
 faiss-cpu
