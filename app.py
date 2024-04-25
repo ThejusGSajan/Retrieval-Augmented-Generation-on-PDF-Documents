@@ -22,13 +22,12 @@ def preprocess_pdfs(pdf_paths):
                 document = Document(page_content=text_in_page, metadata={'page': page_number})
                 documents.append(document)
   
-    splitter = RecursiveCharacterTextSplitter(chunk_size=50000)  # Increased chunk size
+    splitter = RecursiveCharacterTextSplitter(chunk_size=50000)
     chunks = splitter.split_documents(documents)
     embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={'device': 'cpu'})
     for chunk in chunks:
         embeddings.append(embedding_model.encode(chunk))
   
-    
     return documents, embeddings
 
 def load_preprocessed_data():
@@ -78,7 +77,7 @@ def main():
                    n_ctx=4096)
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
     chain = ConversationalRetrievalChain.from_llm(llm=llm, chain_type='stuff',
-                                                  retriever=vector_db.as_retriever(search_kwargs={"k": 1}),  # Reduced k for faster retrieval
+                                                  retriever=vector_db.as_retriever(search_kwargs={"k": 1}),
                                                   memory=memory)
 
     reply = st.container()
@@ -86,3 +85,4 @@ def main():
 
     with container:
         user_input = st.text_input("Ask me about your PDFs!", key="user_input")
+
