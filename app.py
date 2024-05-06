@@ -58,7 +58,7 @@ def main():
         # print(chunks)
 
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2",
-                                           model_kwargs={'device': 'cpu'})
+                                           model_kwargs={'device': 'cuda:0'})
         vector_db = FAISS.from_documents(chunks, embedding=embeddings)
 
         # offloading 2 layers to the gpu
