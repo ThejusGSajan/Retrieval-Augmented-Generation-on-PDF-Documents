@@ -11,6 +11,7 @@ from langchain_community.llms import LlamaCpp
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from streamlit_chat import message
+import json
 
 def session_init():
     if 'history' not in st.session_state:
@@ -20,7 +21,7 @@ def session_init():
     if 'past' not in st.session_state:
         st.session_state['past'] = ["Hi!"]
     if 'ground_truth' not in st.session_state:
-        st.session_state['ground_truth'] = [""]
+        st.session_state['ground_truth'] = ["Ask me about your pdfs!"]
 
 def chat(query,chain,history):
     result = chain({"question": query, "chat_history": history})
@@ -28,11 +29,12 @@ def chat(query,chain,history):
     return result["answer"]
 
 def main():
+    data = []
     session_init()
     st.title("Real-Time Retrieval Augmented Generation on PDF Documents")
     st.sidebar.title("Document Processing")
     uploaded_pdfs = st.sidebar.file_uploader("Upload PDFs", accept_multiple_files=True)
-
+    
     if uploaded_pdfs:
         documents = []
         for file in uploaded_pdfs:
@@ -83,31 +85,32 @@ def main():
         with container:
             with st.form(key='my_form', clear_on_submit=True):
                 input = st.text_input("Question:", placeholder="Ask me something about your PDF!",key='input')
-                expected = st.text_input("Enter Ground Truth Answer:", placeholder="Optional",key="ground_truth")
+                expected = st.text_input("Enter Ground Truth Answer:", placeholder="for performance analysis",key='expected')
                 submit_button = st.form_submit_button(label='Generate')
 
-            if submit_button and input:
+            if submit_button and input and expected:
                 with st.spinner('Finding answers...'):
                     output = chat(input, chain, st.session_state['history'])
                 st.session_state['past'].append(input)
                 st.session_state['generated'].append(output)
-                if expected:
-                    st.session_state['ground_truth'].append(expected)
+                st.session_state['ground_truth'].append(expected)
 
         if st.session_state['generated']:
             with reply:
                 for i in range(len(st.session_state['generated'])):
                     message(st.session_state['past'][i], is_user=True, key=str(i)+'_user',avatar_style='avataaars')
                     message(st.session_state['generated'][i], key=str(i), avatar_style='bottts')
-        
-        data = []
-        for i in range(len(st.session_state['past'])):
+             
+        for i in range(1, len(st.session_state['past'])):
             entry = {"question": st.session_state['past'][i],
                      "answer": st.session_state['generated'][i],
                      "ground_truth": st.session_state['ground_truth'][i]}
             data.append(entry)
-
-        print(data)
+    exit_button = st.button("Exit")
+    if exit_button:
+        with open('dialogue_history.json', 'w') as outfile:
+            json.dump(data, outfile, indent=4)
+        exit()
 
 if __name__ == "__main__":
     main()
