@@ -1,4 +1,3 @@
-# Thejus
 import streamlit as st
 import os
 import tempfile
@@ -50,12 +49,10 @@ def main():
                     documents.append(document)
             os.remove(temp_path)
     
-        # print(text)
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=10000,
             chunk_overlap=20)
         chunks = splitter.split_documents(documents)
-        # print(chunks)
 
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2",
                                            model_kwargs={'device': 'cuda:0'})
@@ -74,7 +71,7 @@ def main():
                                                  retriever=vector_db.as_retriever(search_kwargs={"k": 2}),
                                                  memory=memory)
 
-        # display chat interface
+        # chat user interface
         reply = st.container()
         container = st.container()
 
