@@ -49,21 +49,19 @@ def main():
                     documents.append(document)
             os.remove(temp_path)
     
-        # print(text)
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=10000,
             chunk_overlap=20)
         chunks = splitter.split_documents(documents)
-        # print(chunks)
 
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2",
-                                           model_kwargs={'device': 'cpu'})
+                                           model_kwargs={'device': 'cuda:0'})
         vector_db = FAISS.from_documents(chunks, embedding=embeddings)
 
-        llm = LlamaCpp(streaming = True,
-                       model_path="mistral-7b-instruct-v0.2.Q4_K_M.gguf",
-                       temperature=0.75,
-                       top_p=1,
+        # offloading 2 layers to the gpu
+        llm = LlamaCpp(model_path="mistral-7b-instruct-v0.2.Q4_K_M.gguf",
+                       n_gpu_layers=2,
+                       n_batch=512,
                        verbose=True,
                        n_ctx=4096)
     
@@ -73,7 +71,7 @@ def main():
                                                  retriever=vector_db.as_retriever(search_kwargs={"k": 2}),
                                                  memory=memory)
 
-        # display chat interface
+        # chat user interface
         reply = st.container()
         container = st.container()
 
