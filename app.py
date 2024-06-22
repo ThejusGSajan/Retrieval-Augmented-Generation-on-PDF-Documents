@@ -20,8 +20,10 @@ def session_init():
         st.session_state['generated'] = ["Ask me about your pdfs!"]
     if 'past' not in st.session_state:
         st.session_state['past'] = ["Hi!"]
-    if 'ground_truth' not in st.session_state:
-        st.session_state['ground_truth'] = ["Ask me about your pdfs!"]
+    # if 'ground_truth' not in st.session_state:
+    #     st.session_state['ground_truth'] = ["Ask me about your pdfs!"]
+    if 'evaluation_data' not in st.session_state:
+        st.session_state['evaluation_data'] = []
 
 def chat(query,chain,history):
     result = chain({"question": query, "chat_history": history})
@@ -88,12 +90,21 @@ def main():
                 expected = st.text_input("Enter Ground Truth Answer:", placeholder="for performance analysis",key='expected')
                 submit_button = st.form_submit_button(label='Generate')
 
-            if submit_button and input and expected:
+            if submit_button and input: #and expected:
                 with st.spinner('Finding answers...'):
                     output = chat(input, chain, st.session_state['history'])
                 st.session_state['past'].append(input)
                 st.session_state['generated'].append(output)
-                st.session_state['ground_truth'].append(expected)
+                # st.session_state['ground_truth'].append(expected)
+
+                #getting eval data
+                st.session_state['evaluation_data'].append({
+                    "input": input,
+                    "ground_truth": expected,
+                    "output": output,
+                    "context": [chunk.page_content for chunk in chunks],
+                    "chat_history": st.session_state['history']
+                })
 
         if st.session_state['generated']:
             with reply:
@@ -101,15 +112,16 @@ def main():
                     message(st.session_state['past'][i], is_user=True, key=str(i)+'_user',avatar_style='avataaars')
                     message(st.session_state['generated'][i], key=str(i), avatar_style='bottts')
              
-        for i in range(1, len(st.session_state['past'])):
-            entry = {"question": st.session_state['past'][i],
-                     "answer": st.session_state['generated'][i],
-                     "ground_truth": st.session_state['ground_truth'][i]}
-            data.append(entry)
+        # for i in range(1, len(st.session_state['past'])):
+        #     entry = {"question": st.session_state['past'][i],
+        #              "answer": st.session_state['generated'][i],
+        #              "ground_truth": st.session_state['ground_truth'][i]}
+        #     data.append(entry)
     exit_button = st.button("Exit")
     if exit_button:
-        with open('dialogue_history.json', 'w') as outfile:
-            json.dump(data, outfile, indent=4)
+        with open('evaluation_data.json', 'w') as outfile:
+            json.dump(st.session_state['evaluation_data'], outfile, indent=4)
+        st.success("Evaluation data saved!")
         exit()
 
 if __name__ == "__main__":
